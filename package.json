@@ -1,0 +1,12 @@
+{
+  "name": "flood-relief-app",
+  "version": "1.0.0",
+  "description": "A web application for disaster management, focusing on flood relief and risk zone identification.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

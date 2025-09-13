@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Flood Relief and Risk Zone Identification</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <main class="app-container">
+        
+        <section id="authWrap" class="auth-section">
+            <div class="card auth-card">
+                <h2>Login / Signup</h2>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="form-row">
+                            <input id="loginEmail" type="email" placeholder="Email" value="demo@user.com" autocomplete="email" aria-label="Login Email">
+                            <input id="loginPass" type="password" placeholder="Password" value="demo123" autocomplete="current-password" aria-label="Login Password">
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="button primary" onclick="onLogin()">Sign in</button>
+                            <button type="button" class="button" onclick="showSignup()">Create account</button>
+                        </div>
+                    </form>
+                    <div class="form-help-text muted small">
+                        Demo admin accounts: district@demo.com / district123, state@demo.com / state123, central@demo.com / central123
+                    </div>
+                </div>
+            </div>
+
+            <div id="signupCard" class="card hidden signup-card">
+                <h2>Create Account</h2>
+                <div class="card-body">
+                    <form id="signupForm">
+                        <div class="form-row">
+                            <input id="signName" type="text" placeholder="Full name" autocomplete="name" aria-label="Full Name">
+                            <select id="signRole" aria-label="Account Role">
+                                <option value="citizen">Citizen</option>
+                                <option value="district">District Admin</option>
+                                <option value="state">State Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <input id="signEmail2" type="email" placeholder="Email" autocomplete="email" aria-label="Signup Email">
+                            <input id="signPass2" type="password" placeholder="Password" autocomplete="new-password" aria-label="Signup Password">
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="button primary" onclick="onSignup()">Create</button>
+                            <button type="button" class="button" onclick="hideSignup()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="app" class="app-main hidden">
+            <header class="topbar">
+                <div class="topbar-logo-group">
+                    <h1>Flood Relief and Risk Zone Identification</h1>
+                    <span id="roleTag" class="pill low">User</span>
+                </div>
+                <div class="topbar-actions">
+                    <input id="searchBox" type="search" placeholder="Search alerts, resources, users…">
+                    <button type="button" class="button" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <div class="content-grid two-column-grid">
+                <div class="column-left">
+                    <div class="card map-card">
+                        <h2>Live Map & Zones <small class="muted"> (click map to add zone in draw mode)</small></h2>
+                        <div class="card-body">
+                            <div id="map" class="map-container"></div>
+                            <aside id="adminPanel" class="admin-panel hidden">
+                                <div class="form-row">
+                                    <select id="zoneType" aria-label="Zone Type">
+                                        <option>Flood</option>
+                                        <option>Earthquake</option>
+                                        <option>Fire</option>
+                                        <option>Landslide</option>
+                                    </select>
+                                    <select id="zoneSeverity" aria-label="Zone Severity">
+                                        <option>Low</option>
+                                        <option selected>Medium</option>
+                                        <option>High</option>
+                                    </select>
+                                    <input id="zoneRadius" type="number" placeholder="Radius (m)" value="600" aria-label="Zone Radius">
+                                    <button type="button" class="button warn" onclick="toggleDraw()">Click map to add</button>
+                                </div>
+                                <div class="form-row">
+                                    <input id="broadcastMsg" type="text" placeholder="Broadcast message to zone or whole area" aria-label="Broadcast Message">
+                                    <button type="button" class="button primary" onclick="broadcastAlert()">Broadcast</button>
+                                </div>
+                                <div class="form-row button-group">
+                                    <button id="adminToggle" type="button" class="button" onclick="toggleAdminPanel()">Open Admin Menu</button>
+                                    <button type="button" class="button" onclick="fitZones()">Fit Zones</button>
+                                    <button type="button" class="button" onclick="locateMe()">Locate Me</button>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="column-right">
+                    <section class="card alerts-card">
+                        <h2>Real-time Alerts & SOS Queue</h2>
+                        <div class="card-body">
+                            <div id="alerts" class="list alerts-list"></div>
+                            <div class="button-group">
+                                <button type="button" class="button" onclick="simulateAlert()">Simulate Alert</button>
+                                <button type="button" class="button" onclick="clearAlerts()">Clear Alerts</button>
+                                <button type="button" class="button" onclick="exportAlertsCSV()">Export CSV</button>
+                            </div>
+                            <hr class="divider">
+                            <div id="sosQueueWrap">
+                                <h3>SOS Queue (Admins)</h3>
+                                <div id="sosQueue" class="list sos-list"></div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="card incidents-card">
+                        <h2>Emergency Contacts & Incident Reporting</h2>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <input id="cName" type="text" placeholder="Contact name" aria-label="Contact Name">
+                                <input id="cPhone" type="tel" placeholder="Phone (+91...)" autocomplete="tel" aria-label="Contact Phone">
+                            </div>
+                            <div class="form-row">
+                                <button type="button" class="button primary" onclick="addContact()">Add Contact</button>
+                                <button type="button" class="button" onclick="clearContacts()">Clear</button>
+                            </div>
+                            <div class="contacts-list-container">
+                                <h4>Contacts</h4>
+                                <div id="contacts" class="list contacts-list"></div>
+                            </div>
+                            <hr class="divider">
+                            <form id="incidentForm">
+                                <h3>Report Incident</h3>
+                                <div class="form-row">
+                                    <input id="incType" type="text" placeholder="Type (e.g., Flood)" aria-label="Incident Type">
+                                    <input id="incMsg" type="text" placeholder="Short message" aria-label="Incident Message">
+                                </div>
+                                <div class="form-row">
+                                    <input id="incImage" type="file" accept="image/*" onchange="previewIncImage(event)" aria-label="Upload Incident Image">
+                                    <input id="incLatLng" type="text" placeholder="Lat,lng (optional)" aria-label="Incident Latitude, Longitude">
+                                </div>
+                                <img id="incPreview" class="file-preview hidden" alt="Image preview of reported incident">
+                                <div class="form-row">
+                                    <button type="submit" class="button primary" onclick="reportIncident()">Report</button>
+                                    <button type="button" class="button" onclick="clearIncInput()">Clear</button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            
+            <aside id="adminMenus" class="admin-menus grid hidden"></aside>
+            
+            <footer class="app-footer">
+                Demo prototype. Data stored locally in browser localStorage.
+            </footer>
+        </section>
+        
+        <button id="sosBtn" class="sos-big danger button floating-button hidden" onclick="sendSOS()">
+            SOS <span class="visually-hidden">Send an emergency alert</span>
+        </button>
+        
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
